@@ -3,19 +3,18 @@ import csv
 
 
 def main():
-    # Instantiate a Glop solver and naming it.
     solver = pywraplp.Solver.CreateSolver('GLOP')
     if not solver:
-        return
+        return -1
 
     with open('Nutrients.csv', newline='') as f:
         reader = csv.reader(f)
         data = list(reader)
     data.pop(0)
 
-    weight = 90  # in kg
+    weight = 90  # in kg (used for some boundaries)
 
-    # Nutrient minimums and maximums
+    # every nutrient's lower and upper boundaries in the given unit
     nutrients = [
         ['Energy with dietary fibre, equated (kJ)', 0, 11000],
         ['Energy, without dietary fibre, equated (kJ)', 0, 11000],
@@ -309,10 +308,12 @@ def main():
         ['Valine (mg)', 30*weight, solver.infinity()],
     ]
 
-    # Declare an array to hold our variables.
+    # create array with the variables, that set the min,max boundaries for each food in Nutrients.csv
+    # no food will be eaten more than 200grams in one day.
+    # no kind of cheese will have to be eaten more than 100grams in one day
     max_of_a_kind = 200  # grams
-    foods = []
     max_cheese = 100  # grams
+    foods = []
     for item in data:
         if "Cheese" in item[0]:
             foods.append(solver.NumVar(0.0, max_cheese / 100, item[0]))
@@ -321,7 +322,7 @@ def main():
 
     print('Number of variables =', solver.NumVariables())
 
-    # Create the constraints, one per nutrient.
+    # creates the constraints
     constraints = []
     for i, nutrient in enumerate(nutrients):
         constraints.append(solver.Constraint(nutrient[1], nutrient[2]))
@@ -330,7 +331,7 @@ def main():
 
     print('Number of constraints =', solver.NumConstraints())
 
-    # Objective function: Minimize the sum of (price-normalized) foods.
+    # objective-function
     objective = solver.Objective()
     optimize = 1
     for food in foods:
@@ -339,20 +340,21 @@ def main():
 
     status = solver.Solve()
 
-    # Check that the problem has an optimal solution.
+    # checks if the problem has an optimal solution.
     if status != solver.OPTIMAL:
         print('The problem does not have an optimal solution!')
         if status == solver.FEASIBLE:
             print('A potentially suboptimal solution was found.')
         else:
             print('The solver could not solve the problem.')
-            exit(1)
+            return 1
 
-    # Display the amounts (in dollars) to purchase of each food.
+    # prints the calculated optimal intake, presented as "daily foods"
     nutrients_result = [0] * len(nutrients)
     print('\nDaily Foods:')
     ignored = 0
     for i, food in enumerate(foods):
+        # don't print any food under "ignore_bound" grams
         ignore_bound = 5  # grams
         if food.solution_value()*100 > ignore_bound:
             print('{}: {:.4f} grams'.format(data[i][0], food.solution_value()*100))
@@ -363,14 +365,16 @@ def main():
             ignored += 1
     print("ignored:", ignored)
 
+    # prints the daily nutrients, as well as the min and max boundaries for each of them
+    # (ignores unbounded nutrients, which are not included in the diet)
     print('\nNutrients per day:')
     for i, nutrient in enumerate(nutrients):
-        if nutrients_result[i] != 0 and (nutrient[1] != 0 or nutrient[2] != solver.infinity()):
+        if not (nutrient[1] == 0 and nutrient[2] == solver.infinity()) and nutrients_result[i] > 0.001:
             print('{:.3f} (min {}, max {}) --- {}:  '.format(nutrients_result[i], nutrient[1], nutrient[2], nutrient[0]))
 
-    print('\nAdvanced usage:')
     print('Problem solved in ', solver.wall_time(), ' milliseconds')
     print('Problem solved in ', solver.iterations(), ' iterations')
+    return 0
 
 
 if __name__ == '__main__':
