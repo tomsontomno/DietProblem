@@ -2,6 +2,16 @@ from ortools.linear_solver import pywraplp
 import csv
 
 
+# sublist: enter list[list]
+# element: enter index of element, that should be sorted after
+# 0 for ASC, 1 for DESC order
+def Sort(sublist: list, element: int, asc_desc: int = 1):
+    sublist.sort(key=lambda x: x[element])
+    if asc_desc == 1:
+        sublist.reverse()
+    return sublist
+
+
 def main():
     solver = pywraplp.Solver.CreateSolver('GLOP')
     if not solver:
@@ -10,8 +20,8 @@ def main():
     # init the personal variables
     weight = 90  # in kg (used for some boundaries)
     ignore_bound = 5  # don't print any food under "ignore_bound" grams
-    for_x_days = 7  # output the foods for x days (1 = daily diet, eat the same foods every day)
-    max_of_a_kind = 200  # no food will be eaten more than (max_of_a_kind) grams in one day.
+    for_x_days = 1  # output the foods for x days (1 = daily diet, eat the same foods every day)
+    max_of_a_kind = 200  # no food will be eaten more than (max_of_a_kind) grams in ONE day.
 
     with open('Nutrients_ID.csv', newline='') as f:
         reader = csv.reader(f)
@@ -20,7 +30,7 @@ def main():
 
     # every nutrient's lower and upper boundaries in the given unit
     nutrients = [
-        ['Energy with dietary fibre, equated (kJ)', 7000, 11000],
+        ['Energy with dietary fibre, equated (kJ)', 9000, 12500],
         ['Energy, without dietary fibre, equated (kJ)', 0, solver.infinity()],
         ['Moisture (water) (g)', 0, solver.infinity()],
         ['Protein (g)', 60, solver.infinity()],
@@ -41,7 +51,7 @@ def main():
         ['Free sugars (g)', 0, solver.infinity()],
         ['Starch (g)', 100, solver.infinity()],
         ['Dextrin (g)', 0, solver.infinity()],
-        ['Glycerol (g)', 0, weight*4],
+        ['Glycerol (g)', 0, weight * 4],
         ['Glycogen (g)', 0, solver.infinity()],
         ['Inulin (g)', 0, solver.infinity()],
         ['Erythritol (g)', 0, solver.infinity()],
@@ -58,7 +68,7 @@ def main():
         ['Available carbohydrate, without sugar alcohols (g)', 0, solver.infinity()],
         ['Available carbohydrate, with sugar alcohols (g)', 0, solver.infinity()],
         ['Acetic acid (g)', 0, solver.infinity()],
-        ['Citric acid (g)', 0, 0.1*weight],
+        ['Citric acid (g)', 0, 0.1 * weight],
         ['Fumaric acid (g)', 0, 0.5],
         ['Lactic acid (g)', 0, solver.infinity()],
         ['Malic acid(g)', 0, solver.infinity()],
@@ -69,7 +79,7 @@ def main():
         ['Succinic acid (g)', 0, solver.infinity()],
         ['Tartaric acid (g)', 0, solver.infinity()],
         ['Aluminium (Al) (ug)', 0, solver.infinity()],
-        ['Antimony (Sb) (ug)', 0, 0.000529*weight],
+        ['Antimony (Sb) (ug)', 0, 0.000529 * weight],
         ['Arsenic (As) (ug)', 0, 0.000003],
         ['Cadmium (Cd) (ug)', 0, 0.000023],
         ['Calcium (Ca) (mg)', 700, solver.infinity()],
@@ -83,14 +93,14 @@ def main():
         ['Lead (Pb) (ug)', 0, solver.infinity()],
         ['Magnesium (Mg) (mg)', 400, solver.infinity()],
         ['Manganese (Mn) (mg)', 2.3, solver.infinity()],
-        ['Mercury (Hg) (ug)', 0, 0.1*weight],
+        ['Mercury (Hg) (ug)', 0, 0.1 * weight],
         ['Molybdenum (Mo) (ug)', 0, 60],
         ['Nickel (Ni) (ug)', 0, 150],
         ['Phosphorus (P) (mg)', 3000, solver.infinity()],
         ['Potassium (K) (mg)', 2000, solver.infinity()],
         ['Selenium (Se) (ug)', 55, solver.infinity()],
         ['Sodium (Na) (mg)', 0, 2300],
-        ['Sulphur (S) (mg)', 0, 14*weight],
+        ['Sulphur (S) (mg)', 0, 14 * weight],
         ['Tin (Sn) (ug)', 0, 3],
         ['Zinc (Zn) (mg)', 12, solver.infinity()],
         ['Retinol (preformed vitamin A) (ug)', 790, 3000],
@@ -298,27 +308,42 @@ def main():
         ['Cystine plus cysteine (mg)', 0, solver.infinity()],
         ['Glutamic acid (mg)', 0, solver.infinity()],
         ['Glycine (mg)', 2000, solver.infinity()],
-        ['Histidine (mg)', 14*weight, solver.infinity()],
-        ['Isoleucine (mg)', 19*weight, solver.infinity()],
+        ['Histidine (mg)', 14 * weight, solver.infinity()],
+        ['Isoleucine (mg)', 19 * weight, solver.infinity()],
         ['Leucine (mg)', 4000, solver.infinity()],
         ['Lysine (mg)', 1000, solver.infinity()],
         ['Methionine (mg)', 700, solver.infinity()],
-        ['Phenylalanine (mg)', 9.1*weight, solver.infinity()],
+        ['Phenylalanine (mg)', 9.1 * weight, solver.infinity()],
         ['Proline (mg)', 0, solver.infinity()],
         ['Serine (mg)', 2000, solver.infinity()],
         ['Threonine (mg)', 500, solver.infinity()],
         ['Tyrosine (mg)', 150, solver.infinity()],
         ['Tryptophan (mg)', 250, solver.infinity()],
-        ['Valine (mg)', 30*weight, solver.infinity()],
+        ['Valine (mg)', 30 * weight, solver.infinity()],
     ]
 
     # create array with the variables, that set the min,max boundaries for each food in Nutrients.csv
     ignore_bound = ignore_bound * for_x_days
     max_of_a_kind = max_of_a_kind * for_x_days  # grams
     foods = []
-    blacklist = [356, 276, 355, 370, 371, 357, 364]
+
+    # foods that have their ID on the blacklist will not be included in the "Daily Foods" and their max is set to 0
+    blacklist = [356, 276, 355, 370, 371, 357, 364, 1262, 882, 55, 826, 795, 1077, 794, 1079, 1200, 792, 75]
+    # foods in the reduced category will at most be eaten 1/2 the "max_of_a_kind" amount per day
     reduced = []
+    # foods in the reduced category will at most be eaten 1/8 the "max_of_a_kind" amount per day
     extremely_reduced = [295, 294]
+
+    # custom reduction categories, that can be configured independently
+    custom_reduction_var1 = 4
+    custom_reduction1 = [363]
+    custom_reduction_var2 = 1
+    custom_reduction2 = []
+    custom_reduction_var3 = 1
+    custom_reduction3 = []
+
+    # sets the min/max boundaries for every different food, in respect of categorical properties like "blacklist" and
+    # "reduced" etc. and the "max_of_a_kind" parameter
     for item in data:
         if int(item[0]) in blacklist:
             foods.append(solver.NumVar(0.0, 0 / 100, item[1]))
@@ -326,9 +351,14 @@ def main():
             foods.append(solver.NumVar(0.0, (max_of_a_kind/2) / 100, item[1]))
         elif int(item[0]) in extremely_reduced:
             foods.append(solver.NumVar(0.0, (max_of_a_kind/8) / 100, item[1]))
+        elif int(item[0]) in custom_reduction1:
+            foods.append(solver.NumVar(0.0, (max_of_a_kind/custom_reduction_var1) / 100, item[1]))
+        elif int(item[0]) in custom_reduction2:
+            foods.append(solver.NumVar(0.0, (max_of_a_kind/custom_reduction_var2) / 100, item[1]))
+        elif int(item[0]) in custom_reduction3:
+            foods.append(solver.NumVar(0.0, (max_of_a_kind/custom_reduction_var3) / 100, item[1]))
         else:
             foods.append(solver.NumVar(0.0, max_of_a_kind / 100, item[1]))
-
 
     print('Number of variables =', solver.NumVariables())
 
@@ -344,6 +374,8 @@ def main():
     # objective-function
     objective = solver.Objective()
     optimize = 1
+    print("Optimize for", nutrients[optimize][0])
+
     for food in foods:
         objective.SetCoefficient(food, optimize)
     objective.SetMinimization()
@@ -361,16 +393,30 @@ def main():
 
     # prints the calculated optimal intake, presented as "daily foods"
     nutrients_result = [0] * len(nutrients)
-    print('\nDaily Foods:')
+
     ignored = 0
+    daily = []
     for i, food in enumerate(foods):
+        # only consider the food in "Daily Foods", if and only if the solution_value() is higher than the "ignore_bound"
         if food.solution_value()*100 > ignore_bound:
-            print('ID:{} {}: {:.4f} grams'.format(data[i][0], data[i][1], food.solution_value()*100))
-            for j, _ in enumerate(nutrients):
-                nutrients_result[j] += float(str(data[i][j + 2]).replace(",", "")) * food.solution_value()
+            # daily[x] = [ID, name, value in grams, index in data]
+            daily.append([data[i][0], data[i][1], food.solution_value()*100, i])
         elif food.solution_value() > 0:
-            # under ignore_bound
+            # 0 < food.solution_value() < ignore_bound, so the "ignored"-counter, increments
             ignored += 1
+
+    # the "daily" list[list2], is sorted by a value in list 2 e.g. "ID" or "grams"
+    daily = Sort(daily, 2)
+
+    print('\nDaily Foods:')
+    # Output of "Daily Foods"
+    for j, food in enumerate(daily):
+        print('{:.2f} grams, ID:{} - {}'.format(food[2], food[0], food[1]))
+
+        # every nutrient of each food in "daily"-list is saved
+        for k, _ in enumerate(nutrients):
+            nutrients_result[k] += float(str(data[food[3]][k + 2]).replace(",", "")) * food[2]/100
+
     print("ignored:", ignored)
 
     # prints the daily nutrients, as well as the min and max boundaries for each of them
