@@ -12,7 +12,9 @@ def Sort(sublist: list, element: int, asc_desc: int = 1):
     return sublist
 
 
-def main():
+def main(param_blacklist: list[int] = None):
+    if param_blacklist is None:
+        param_blacklist = []
     solver = pywraplp.Solver.CreateSolver('GLOP')
     if not solver:
         return -1
@@ -30,12 +32,12 @@ def main():
 
     # every nutrient's lower and upper boundaries in the given unit
     nutrients = [
-        ['Energy with dietary fibre, equated (kJ)', 9000, 12500],
+        ['Energy with dietary fibre, equated (kJ)', 0, 8480],
         ['Energy, without dietary fibre, equated (kJ)', 0, solver.infinity()],
         ['Moisture (water) (g)', 0, solver.infinity()],
-        ['Protein (g)', 60, solver.infinity()],
+        ['Protein (g)', 1.1*weight, solver.infinity()],
         ['Nitrogen (g)', 0, solver.infinity()],
-        ['Fat, total (g)', 0, 150],
+        ['Fat, total (g)', 0, 95],
         ['Ash (g)', 0, solver.infinity()],
         ['Total dietary fibre (g)', 20, 150],
         ['Alcohol (g)', 0, 0],
@@ -88,44 +90,44 @@ def main():
         ['Cobalt (Co) (ug)', 0, 0.0014],
         ['Copper (Cu) (mg)', 1, solver.infinity()],
         ['Fluoride (F) (ug)', 0, solver.infinity()],
-        ['Iodine (I) (ug)', 100, solver.infinity()],
+        ['Iodine (I) (ug)', 0, solver.infinity()],
         ['Iron (Fe) (mg)', 9, solver.infinity()],
         ['Lead (Pb) (ug)', 0, solver.infinity()],
         ['Magnesium (Mg) (mg)', 400, solver.infinity()],
-        ['Manganese (Mn) (mg)', 2.3, solver.infinity()],
+        ['Manganese (Mn) (mg)', 2.0, solver.infinity()],
         ['Mercury (Hg) (ug)', 0, 0.1 * weight],
-        ['Molybdenum (Mo) (ug)', 0, 60],
-        ['Nickel (Ni) (ug)', 0, 150],
-        ['Phosphorus (P) (mg)', 3000, solver.infinity()],
-        ['Potassium (K) (mg)', 2000, solver.infinity()],
+        ['Molybdenum (Mo) (ug)', 0, 2000],
+        ['Nickel (Ni) (ug)', 0, 50],
+        ['Phosphorus (P) (mg)', 800, 1900],
+        ['Potassium (K) (mg)', 4700, solver.infinity()],
         ['Selenium (Se) (ug)', 55, solver.infinity()],
         ['Sodium (Na) (mg)', 0, 2300],
-        ['Sulphur (S) (mg)', 0, 14 * weight],
-        ['Tin (Sn) (ug)', 0, 3],
-        ['Zinc (Zn) (mg)', 12, solver.infinity()],
-        ['Retinol (preformed vitamin A) (ug)', 790, 3000],
-        ['Alpha-carotene (ug)', 0, solver.infinity()],
-        ['Beta-carotene (ug)', 30, 3500],
+        ['Sulphur (S) (mg)', 0, 15 * weight],
+        ['Tin (Sn) (ug)', 0, 0],
+        ['Zinc (Zn) (mg)', 11, solver.infinity()],
+        ['Retinol (preformed vitamin A) (ug)', 700, solver.infinity()],
+        ['Alpha-carotene (ug)', 3000, solver.infinity()],
+        ['Beta-carotene (ug)', 4000, solver.infinity()],
         ['Cryptoxanthin (ug)', 0, solver.infinity()],
         ['Beta-carotene equivalents (provitamin A) (ug)', 0, solver.infinity()],
         ['Vitamin A retinol equivalents (ug)', 0, solver.infinity()],
         ['Lutein (ug)', 0, solver.infinity()],
         ['Lycopene (ug)', 0, solver.infinity()],
-        ['Xanthophyl (ug)', 0, 30000],
-        ['Thiamin (B1) (mg)', 1.3, solver.infinity()],
-        ['Riboflavin (B2) (mg)', 1.4, solver.infinity()],
-        ['Niacin (B3) (mg)', 15, solver.infinity()],
+        ['Xanthophyl (ug)', 0, solver.infinity()],
+        ['Thiamin (B1) (mg)', 1.2, solver.infinity()],
+        ['Riboflavin (B2) (mg)', 1.3, solver.infinity()],
+        ['Niacin (B3) (mg)', 16, solver.infinity()],
         ['Niacin derived from tryptophan (mg)', 0, solver.infinity()],
         ['Niacin derived equivalents (mg)', 0, solver.infinity()],
-        ['Pantothenic acid (B5) (mg)', 4, solver.infinity()],
-        ['Pyridoxine (B6) (mg)', 1.5, solver.infinity()],
-        ['Biotin (B7) (ug)', 20, 200],
+        ['Pantothenic acid (B5) (mg)', 5, solver.infinity()],
+        ['Pyridoxine (B6) (mg)', 1.3, solver.infinity()],
+        ['Biotin (B7) (ug)', 30, 200],
         ['Cobalamin (B12) (ug)', 2, solver.infinity()],
         ['Folate, natural (ug)', 0, solver.infinity()],
         ['Folic acid (ug)', 0, solver.infinity()],
         ['Total folates (ug)', 0, solver.infinity()],
         ['Dietary folate equivalents (ug)', 0, solver.infinity()],
-        ['Vitamin C (mg)', 70, solver.infinity()],
+        ['Vitamin C (mg)', 90, solver.infinity()],
         ['Cholecalciferol (D3) (ug)', 0, solver.infinity()],
         ['Ergocalciferol (D2) (ug)', 0, solver.infinity()],
         ['25-hydroxy cholecalciferol (25-OH D3) (ug)', 0, solver.infinity()],
@@ -283,9 +285,9 @@ def main():
         ['Total undifferentiated fatty acids, mass basis basis (mg)', 0, solver.infinity()],
         ['Total trans fatty acids, imputed (mg)', 0, solver.infinity()],
         ['Caffeine (mg)', 0, 400],
-        ['Cholesterol (mg)', 0, 200],
-        ['Alanine (mg/gN)', 1200, 6500],
-        ['Arginine (mg/gN)', 1200, 7000],
+        ['Cholesterol (mg)', 0, 300],
+        ['Alanine (mg/gN)', 2000, 6500],
+        ['Arginine (mg/gN)', 6000, 30000],
         ['Aspartic acid (mg/gN)', 0, solver.infinity()],
         ['Cystine plus cysteine (mg/gN)', 0, solver.infinity()],
         ['Glutamic acid (mg/gN)', 0, solver.infinity()],
@@ -306,20 +308,20 @@ def main():
         ['Arginine (mg)', 0, solver.infinity()],
         ['Aspartic acid (mg)', 0, solver.infinity()],
         ['Cystine plus cysteine (mg)', 0, solver.infinity()],
-        ['Glutamic acid (mg)', 0, solver.infinity()],
-        ['Glycine (mg)', 2000, solver.infinity()],
-        ['Histidine (mg)', 14 * weight, solver.infinity()],
-        ['Isoleucine (mg)', 19 * weight, solver.infinity()],
-        ['Leucine (mg)', 4000, solver.infinity()],
-        ['Lysine (mg)', 1000, solver.infinity()],
-        ['Methionine (mg)', 700, solver.infinity()],
-        ['Phenylalanine (mg)', 9.1 * weight, solver.infinity()],
+        ['Glutamic acid (mg)', 2000, solver.infinity()],
+        ['Glycine (mg)', 0, solver.infinity()],
+        ['Histidine (mg)', 0, solver.infinity()],
+        ['Isoleucine (mg)', 0, solver.infinity()],
+        ['Leucine (mg)', 0, solver.infinity()],
+        ['Lysine (mg)', 0, solver.infinity()],
+        ['Methionine (mg)', 0, solver.infinity()],
+        ['Phenylalanine (mg)', 0, solver.infinity()],
         ['Proline (mg)', 0, solver.infinity()],
-        ['Serine (mg)', 2000, solver.infinity()],
-        ['Threonine (mg)', 500, solver.infinity()],
-        ['Tyrosine (mg)', 150, solver.infinity()],
-        ['Tryptophan (mg)', 250, solver.infinity()],
-        ['Valine (mg)', 30 * weight, solver.infinity()],
+        ['Serine (mg)', 0, solver.infinity()],
+        ['Threonine (mg)', 0, solver.infinity()],
+        ['Tyrosine (mg)', 0, solver.infinity()],
+        ['Tryptophan (mg)', 0, solver.infinity()],
+        ['Valine (mg)', 0, solver.infinity()],
     ]
 
     # create array with the variables, that set the min,max boundaries for each food in Nutrients.csv
@@ -328,16 +330,18 @@ def main():
     foods = []
 
     # foods that have their ID on the blacklist will not be included in the "Daily Foods" and their max is set to 0
-    blacklist = [356, 276, 355, 370, 371, 357, 364, 1262, 882, 55, 826, 795, 1077, 794, 1079, 1200, 792, 75]
+    blacklist = [356, 276, 355, 370, 371, 357, 364, 1262, 882, 55, 826, 795, 1077, 794, 1079, 1200, 792, 75, 1169, 740,
+                 595, 480, 1207, 1209, 1211, 1215, 1203, 1217, 723, 1153]
+    blacklist = blacklist + param_blacklist
     # foods in the reduced category will at most be eaten 1/2 the "max_of_a_kind" amount per day
     reduced = []
     # foods in the reduced category will at most be eaten 1/8 the "max_of_a_kind" amount per day
-    extremely_reduced = [295, 294]
+    extremely_reduced = [295, 294, 571]
 
     # custom reduction categories, that can be configured independently
-    custom_reduction_var1 = 4
-    custom_reduction1 = [363]
-    custom_reduction_var2 = 1
+    custom_reduction_var1 = 5
+    custom_reduction1 = [363, 991, 997, 1000]
+    custom_reduction_var2 = 4
     custom_reduction2 = []
     custom_reduction_var3 = 1
     custom_reduction3 = []
@@ -410,14 +414,19 @@ def main():
 
     print('\nDaily Foods:')
     # Output of "Daily Foods"
+    food_IDs = []
+    amount_grams = 0
     for j, food in enumerate(daily):
+        food_IDs.append(int(food[0]))
         print('{:.2f} grams, ID:{} - {}'.format(food[2], food[0], food[1]))
+        amount_grams += int(food[2])
 
         # every nutrient of each food in "daily"-list is saved
         for k, _ in enumerate(nutrients):
             nutrients_result[k] += float(str(data[food[3]][k + 2]).replace(",", "")) * food[2]/100
 
     print("ignored:", ignored)
+    print("Total weight:", amount_grams, "grams")
 
     # prints the daily nutrients, as well as the min and max boundaries for each of them
     # (ignores unbounded nutrients, which are not included in the diet)
@@ -435,7 +444,7 @@ def main():
 
     print('Problem solved in ', solver.wall_time(), ' milliseconds')
     print('Problem solved in ', solver.iterations(), ' iterations')
-    return 0
+    return food_IDs
 
 
 if __name__ == '__main__':
